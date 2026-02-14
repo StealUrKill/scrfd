@@ -193,6 +193,10 @@ impl SCRFD {
         let (scores_list, bboxes_list, kpss_list) =
             self.forward(input_tensor.into_dyn(), center_cache)?;
 
+        if scores_list.is_empty() {
+            return Err("No faces detected".into());
+        }
+
         // Concatenate scores and bboxes
         let scores = ScrfdHelpers::concatenate_array2(&scores_list)?;
         let bboxes = ScrfdHelpers::concatenate_array2(&bboxes_list)?;

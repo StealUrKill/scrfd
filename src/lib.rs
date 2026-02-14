@@ -19,7 +19,7 @@ pub use scrfd_async::SCRFDAsync;
 mod tests {
     use super::*;
     use opencv::core::Vector;
-    use opencv::imgcodecs::{imdecode, IMREAD_UNCHANGED};
+    use opencv::imgcodecs::imdecode;
     use opencv::prelude::MatTraitConst;
     use opencv::{core, imgcodecs, imgproc};
     use ort::execution_providers::CPUExecutionProvider;
@@ -46,7 +46,10 @@ mod tests {
         let image_path = "sample_input/1.png";
         let image = std::fs::read(image_path)?;
 
-        let mut image = match imdecode(&Vector::<u8>::from_slice(&image), IMREAD_UNCHANGED) {
+        let mut image = match imdecode(
+            &Vector::<u8>::from_slice(&image),
+            opencv::imgcodecs::IMREAD_COLOR,
+        ) {
             Ok(img) => img,
             Err(_) => return Err("Failed to decode image".into()),
         };
@@ -120,7 +123,10 @@ mod tests {
         let image_path = "sample_input/1.png";
         let image = std::fs::read(image_path)?;
 
-        let mut image = match imdecode(&Vector::<u8>::from_slice(&image), IMREAD_UNCHANGED) {
+        let mut image = match imdecode(
+            &Vector::<u8>::from_slice(&image),
+            opencv::imgcodecs::IMREAD_COLOR,
+        ) {
             Ok(img) => img,
             Err(_) => return Err("Failed to decode image".into()),
         };

@@ -185,6 +185,9 @@ impl ScrfdHelpers {
     /// // keep will contain [0] if the boxes overlap significantly
     /// ```
     pub fn nms(dets: &Array2<f32>, iou_thres: f32) -> Vec<usize> {
+        if dets.is_empty() {
+            return Vec::new();
+        }
         let x1 = dets.column(0);
         let y1 = dets.column(1);
         let x2 = dets.column(2);
