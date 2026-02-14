@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.3.1] - 2026-02-14
+
+### New Features
+
+- **Sample Inputs**: Added sample input/output images and standard image loading for tests.
+- Improved detection robustness by handling empty result lists.
+
 ## [1.3.0] - 2026-02-14
 
 ### New Features
@@ -13,12 +20,17 @@
 - **Performance**: Optimized array operations using `mapv_inplace()` to reduce memory allocation overhead.
 - **Error Handling**: Enhanced error reporting in model execution and session creation.
 - **Compatibility**: Adjusted method signatures and internal logic to handle breaking changes in `ort` crate.
+- **Panic Fix**: Resolved an issue that could lead to a panic under specific conditions during model inference.
 
 ### Dependencies
 
 - Updated `ort` to `2.0.0-rc.11`.
 - Updated `opencv` to `0.98.1`.
 - Updated `anyhow`, `uuid`, and `ndarray` dependencies.
+
+### Fixes
+
+- **Panic Prevention**: Fixed a panic that occurred when concatenating empty array slices.
 
 ### Internal
 
