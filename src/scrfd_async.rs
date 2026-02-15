@@ -20,14 +20,14 @@ use super::helpers::{
 /// # Example
 /// ```no_run
 /// use ort::session::Session;
-/// use rusty_scrfd::SCRFDAsync;
+/// use rusty_scrfd::SCRFDA;
 ///
 /// # #[tokio::main]
 /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
 /// let session = Session::builder()?
 ///     .commit_from_file("path/to/model.onnx")?;
 ///
-/// let detector = SCRFDAsync::new(
+/// let detector = SCRFDA::new(
 ///     session,
 ///     (640, 640),  // input size
 ///     0.5,         // confidence threshold
@@ -37,7 +37,7 @@ use super::helpers::{
 /// # Ok(())
 /// # }
 /// ```
-pub struct SCRFDAsync {
+pub struct SCRFDA {
     input_size: (i32, i32),
     conf_thres: f32,
     iou_thres: f32,
@@ -53,7 +53,7 @@ pub struct SCRFDAsync {
     relative_output: bool,
 }
 
-impl SCRFDAsync {
+impl SCRFDA {
     /// Creates a new SCRFD face detector instance.
     ///
     /// # Arguments
@@ -64,16 +64,16 @@ impl SCRFDAsync {
     /// * `relative_output` - Whether to return coordinates relative to image dimensions
     ///
     /// # Returns
-    /// * `Result<Self, Box<dyn Error>>` - A new SCRFDAsync instance or an error
+    /// * `Result<Self, Box<dyn Error>>` - A new SCRFDA instance or an error
     ///
     /// # Example
     /// ```no_run
     /// use ort::session::Session;
-    /// use rusty_scrfd::SCRFDAsync;
+    /// use rusty_scrfd::SCRFDA;
     ///
     /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// # let session = Session::builder()?.commit_from_file("model.onnx")?;
-    /// let detector = SCRFDAsync::new(
+    /// let detector = SCRFDA::new(
     ///     session,
     ///     (640, 640),
     ///     0.5,
@@ -137,14 +137,14 @@ impl SCRFDAsync {
     /// # Example
     /// ```no_run
     /// use ort::session::Session;
-    /// use rusty_scrfd::SCRFDAsync;
+    /// use rusty_scrfd::SCRFDA;
     /// use ndarray::ArrayD;
     /// use std::collections::HashMap;
     ///
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let session = Session::builder()?.commit_from_file("model.onnx")?;
-    /// let mut detector = SCRFDAsync::new(session, (640, 640), 0.5, 0.45, true)?;
+    /// let mut detector = SCRFDA::new(session, (640, 640), 0.5, 0.45, true)?;
     ///
     /// // Create dummy input tensor (1, 3, 640, 640)
     /// let input_tensor = ArrayD::<f32>::zeros(vec![1, 3, 640, 640]);
@@ -271,7 +271,7 @@ impl SCRFDAsync {
     /// # Example
     /// ```no_run
     /// use ort::session::Session;
-    /// use rusty_scrfd::SCRFDAsync;
+    /// use rusty_scrfd::SCRFDA;
     /// use opencv::prelude::*;
     /// use opencv::core::Mat;
     /// use std::collections::HashMap;
@@ -279,7 +279,7 @@ impl SCRFDAsync {
     /// # #[tokio::main]
     /// # async fn main() -> Result<(), Box<dyn std::error::Error>> {
     /// let session = Session::builder()?.commit_from_file("model.onnx")?;
-    /// let mut detector = SCRFDAsync::new(session, (640, 640), 0.5, 0.45, true)?;
+    /// let mut detector = SCRFDA::new(session, (640, 640), 0.5, 0.45, true)?;
     ///
     /// // Create dummy image
     /// let image = Mat::default();

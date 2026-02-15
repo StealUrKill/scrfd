@@ -5,14 +5,14 @@ pub mod scrfd;
 #[cfg(feature = "async")]
 pub mod scrfd_async;
 
-pub use builder::SCRFDBuilder;
+pub use builder::ScrfdBuilder;
 pub use helpers::*;
 pub use ndarray;
 pub use ort;
 pub use scrfd::SCRFD;
 
 #[cfg(feature = "async")]
-pub use scrfd_async::SCRFDAsync;
+pub use scrfd_async::SCRFDA;
 
 #[cfg(test)]
 mod tests {
@@ -34,7 +34,7 @@ mod tests {
             .with_execution_providers([CPUExecutionProvider::default().build()])?
             .commit_from_file(model_path)?;
 
-        let scrfd = builder::SCRFDBuilder::new(session)
+        let scrfd = builder::ScrfdBuilder::new(session)
             .set_input_size((640, 640))
             .set_conf_thres(0.25)
             .set_iou_thres(0.4)
@@ -116,7 +116,7 @@ mod tests {
             .with_execution_providers([CPUExecutionProvider::default().build()])?
             .commit_from_file(model_path)?;
 
-        let mut scrfd = SCRFDAsync::new(session, (640, 640), 0.25, 0.4, true)?;
+        let scrfd = SCRFDA::new(session, (640, 640), 0.25, 0.4, true)?;
 
         // Load test image
         let image_path = "sample_input/1.png";

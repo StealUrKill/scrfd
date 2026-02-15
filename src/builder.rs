@@ -5,19 +5,19 @@
 //!
 //! # Example
 //! ```no_run
-//! use rusty_scrfd::builder::SCRFDBuilder;
+//! use rusty_scrfd::builder::ScrfdBuilder;
 //! use ort::session::Session;
 //!
 //! # fn main() -> Result<(), Box<dyn std::error::Error>> {
 //! let session = Session::builder()?.commit_from_file("model.onnx")?;
 //!
 //! // Build synchronous model with default parameters
-//! let model = SCRFDBuilder::new(session)
+//! let model = ScrfdBuilder::new(session)
 //!     .build()?;
 //!
 //! // Or customize parameters
 //! let session = Session::builder()?.commit_from_file("model.onnx")?;
-//! let model = SCRFDBuilder::new(session)
+//! let model = ScrfdBuilder::new(session)
 //!     .set_input_size((320, 320))
 //!     .set_conf_thres(0.6)
 //!     .set_iou_thres(0.4)
@@ -31,12 +31,12 @@ use ort::session::Session;
 use std::error::Error;
 
 #[cfg(feature = "async")]
-use crate::scrfd_async::SCRFDAsync;
+use crate::scrfd_async::SCRFDA;
 
 /// Builder for configuring and constructing SCRFD face detection models
 ///
 /// This struct provides a fluent builder interface for creating both synchronous [`SCRFD`]
-/// and asynchronous [`SCRFDAsync`] model instances with customizable parameters.
+/// and asynchronous [`SCRFDA`] model instances with customizable parameters.
 ///
 /// The builder allows setting:
 /// - Input image dimensions
@@ -48,7 +48,7 @@ use crate::scrfd_async::SCRFDAsync;
 /// - Input size: (640, 640)
 /// - Confidence threshold: 0.25
 /// - IoU threshold: 0.4
-pub struct SCRFDBuilder {
+pub struct ScrfdBuilder {
     session: Session,
     input_size: Option<(i32, i32)>,
     conf_thres: Option<f32>,
@@ -56,7 +56,7 @@ pub struct SCRFDBuilder {
     relative_output: bool,
 }
 
-impl SCRFDBuilder {
+impl ScrfdBuilder {
     /// Creates a new SCRFD builder with default parameters
     ///
     /// # Arguments
@@ -68,7 +68,7 @@ impl SCRFDBuilder {
     /// - Confidence threshold: 0.5
     /// - IoU threshold: 0.5
     pub fn new(session: Session) -> Self {
-        SCRFDBuilder {
+        ScrfdBuilder {
             session,
             input_size: Some((640, 640)),
             conf_thres: Some(0.25),
@@ -149,15 +149,15 @@ impl SCRFDBuilder {
     ///
     /// # Returns
     /// A Result containing either:
-    /// * `Ok(SCRFDAsync)` - Successfully built model
+    /// * `Ok(SCRFDA)` - Successfully built model
     /// * `Err(Box<dyn Error>)` - Error during model construction
     #[cfg(feature = "async")]
-    pub fn build_async(self) -> Result<SCRFDAsync, Box<dyn Error>> {
+    pub fn build_async(self) -> Result<SCRFDA, Box<dyn Error>> {
         let input_size = self.input_size.ok_or("Input size not set")?;
         let conf_thres = self.conf_thres.ok_or("Confidence threshold not set")?;
         let iou_thres = self.iou_thres.ok_or("IoU threshold not set")?;
 
-        SCRFDAsync::new(
+        SCRFDA::new(
             self.session,
             input_size,
             conf_thres,
