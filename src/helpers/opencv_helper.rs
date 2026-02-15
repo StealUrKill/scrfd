@@ -201,7 +201,7 @@ impl OpenCVHelper {
             core::CV_8UC3,
             core::Scalar::all(0.0),
         )?;
-        let mut roi = det_image.roi_mut(core::Rect::new(0, 0, input_height, new_height))?;
+        let mut roi = det_image.roi_mut(core::Rect::new(0, 0, new_width, new_height))?;
         opencv_resized_image.copy_to(&mut roi)?;
 
         Ok((det_image, det_scale))

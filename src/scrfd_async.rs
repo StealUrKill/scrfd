@@ -158,13 +158,13 @@ impl SCRFDAsync {
     /// let input_tensor = ArrayD::<f32>::zeros(vec![1, 3, 640, 640]);
     /// let mut center_cache = HashMap::new();
     ///
-    /// let (scores, bboxes, kpss) = detector.forward(&input_tensor, &mut center_cache).await?;
+    /// let (scores, bboxes, kpss) = detector.forward(input_tensor, &mut center_cache).await?;
     /// # Ok(())
     /// # }
     /// ```
     pub async fn forward(
-        &mut self,
-        input_tensor: &ArrayD<f32>,
+        &self,
+        input_tensor: ArrayD<f32>,
         center_cache: &mut HashMap<(i32, i32, i32), Array2<f32>>,
     ) -> Result<(Vec<Array2<f32>>, Vec<Array2<f32>>, Vec<Array3<f32>>), Box<dyn Error>> {
         let mut scores_list = Vec::new();
@@ -172,17 +172,14 @@ impl SCRFDAsync {
         let mut kpss_list = Vec::new();
         let input_height = input_tensor.shape()[2];
         let input_width = input_tensor.shape()[3];
-        let input_value = Value::from_array(input_tensor.to_owned())?;
+        let input_value = Value::from_array(input_tensor)?;
         let input_name = self.input_names[0].clone();
-        let input = ort::inputs![input_name => input_value];
-
-        let run_options = match RunOptions::new() {
-            Ok(options) => options,
+        let input = match ort::inputs![input_name => input_value] {
+            Ok(i) => i,
             Err(e) => return Err(Box::new(e)),
         };
-
-        // Run the model
-        let session_output = match self.session.run_async(input, &run_options) {
+        
+        let session_output = match self.session.run_async(input) {
             Ok(output) => output,
             Err(e) => return Err(Box::new(e)),
         };
@@ -206,7 +203,7 @@ impl SCRFDAsync {
         // reverse the order of outputs
         let fmc = self._fmc;
         for (idx, &stride) in self.feat_stride_fpn.iter().enumerate() {
-            let scores = outputs[idx].clone();
+            let scores = &outputs[idx];
             let bbox_preds = outputs[idx + fmc].to_shape((outputs[idx + fmc].len() / 4, 4))?;
             let bbox_preds = bbox_preds * stride as f32;
             let kps_preds = outputs[idx + fmc * 2]
@@ -247,14 +244,16 @@ impl SCRFDAsync {
             }
 
             let pos_scores = scores.select(Axis(0), &pos_inds);
-            let bboxes = ScrfdHelpers::distance2bbox(&anchor_centers, &bbox_preds.to_owned(), None);
+            let bbox_preds_owned = bbox_preds.into_owned();
+            let bboxes = ScrfdHelpers::distance2bbox(&anchor_centers, &bbox_preds_owned, None);
             let pos_bboxes = bboxes.select(Axis(0), &pos_inds);
 
             scores_list.push(pos_scores.to_shape((pos_scores.len(), 1))?.to_owned());
             bboxes_list.push(pos_bboxes);
 
             if self.use_kps {
-                let kpss = ScrfdHelpers::distance2kps(&anchor_centers, &kps_preds.to_owned(), None);
+                let kps_preds_owned = kps_preds.into_owned();
+                let kpss = ScrfdHelpers::distance2kps(&anchor_centers, &kps_preds_owned, None);
                 let kpss = kpss.to_shape((kpss.shape()[0], kpss.shape()[1] / 2, 2))?;
                 let pos_kpss = kpss.select(Axis(0), &pos_inds);
                 kpss_list.push(pos_kpss);
@@ -299,7 +298,7 @@ impl SCRFDAsync {
     /// # }
     /// ```
     pub async fn detect(
-        &mut self,
+        &self,
         image: &Mat,
         max_num: usize,
         metric: &str,
@@ -315,7 +314,7 @@ impl SCRFDAsync {
             .opencv_helper
             .prepare_input_tensor(&det_image, self.input_size)?;
         let (scores_list, bboxes_list, kpss_list) =
-            match self.forward(&input_tensor.into_dyn(), center_cache).await {
+            match self.forward(input_tensor.into_dyn(), center_cache).await {
                 Ok(result) => result,
                 Err(e) => return Err(e),
             };

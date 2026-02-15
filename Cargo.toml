@@ -46,12 +46,12 @@ download-binaries = ["ort/download-binaries"]
 load-dynamic = ["ort/load-dynamic"]
 
 [dependencies]
-ort = { version = "2.0.0-rc.11", features = [ "ndarray" ] }
+ort = { version = "2.0.0-rc.9", features = [ "ndarray" ] }
 opencv-binding-generator = "0.100.0"
 opencv = "0.98.1"
 ndarray = "0.17.2"
 uuid = "1.20.0"
 anyhow = "1.0.101"
 ndarray-stats = "0.7.0"
-tokio = { version = "1.0", features = ["full"], optional = true }
-log = "0.4"
+tokio = { version = "1.49", features = ["full"], optional = true }
+log = "0.4.29"

@@ -89,14 +89,14 @@ impl ScrfdHelpers {
             (x1, y1, x2, y2)
         };
 
-        println!("x1: {:?}", x1);
-        println!("y1: {:?}", y1);
-        println!("x2: {:?}", x2);
-        println!("y2: {:?}", y2);
+        log::debug!("x1: {:?}", x1);
+        log::debug!("y1: {:?}", y1);
+        log::debug!("x2: {:?}", x2);
+        log::debug!("y2: {:?}", y2);
 
         let concatenated =
             ndarray::stack(Axis(1), &[x1.view(), y1.view(), x2.view(), y2.view()]).unwrap();
-        println!("Shape: {:?}", concatenated.shape());
+        log::debug!("Shape: {:?}", concatenated.shape());
         concatenated
     }
 

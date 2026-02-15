@@ -2,17 +2,16 @@ pub mod builder;
 pub mod helpers;
 pub mod scrfd;
 
-#[cfg(feature = "async")]
+// #[cfg(feature = "async")]
 pub mod scrfd_async;
 
 pub use builder::SCRFDBuilder;
 pub use helpers::*;
 pub use ndarray;
-pub use opencv;
 pub use ort;
 pub use scrfd::SCRFD;
 
-#[cfg(feature = "async")]
+// #[cfg(feature = "async")]
 pub use scrfd_async::SCRFDAsync;
 
 #[cfg(test)]
@@ -35,7 +34,7 @@ mod tests {
             .with_execution_providers([CPUExecutionProvider::default().build()])?
             .commit_from_file(model_path)?;
 
-        let mut scrfd = builder::SCRFDBuilder::new(session)
+        let scrfd = builder::SCRFDBuilder::new(session)
             .set_input_size((640, 640))
             .set_conf_thres(0.25)
             .set_iou_thres(0.4)
