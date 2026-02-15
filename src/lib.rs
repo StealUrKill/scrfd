@@ -2,7 +2,7 @@ pub mod builder;
 pub mod helpers;
 pub mod scrfd;
 
-// #[cfg(feature = "async")]
+#[cfg(feature = "async")]
 pub mod scrfd_async;
 
 pub use builder::SCRFDBuilder;
@@ -11,7 +11,7 @@ pub use ndarray;
 pub use ort;
 pub use scrfd::SCRFD;
 
-// #[cfg(feature = "async")]
+#[cfg(feature = "async")]
 pub use scrfd_async::SCRFDAsync;
 
 #[cfg(test)]
