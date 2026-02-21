@@ -208,18 +208,6 @@ impl OpenCVHelper {
 
         Ok((det_image, det_scale, x_offset, y_offset))
     }
-
-    pub fn draw_rectangle(&self, image: &mut Mat, rect: core::Rect) -> Result<(), Box<dyn Error>> {
-        opencv::imgproc::rectangle(
-            image,
-            rect,
-            core::Scalar::new(0.0, 0.0, 255.0, 0.0),
-            2,
-            opencv::imgproc::LINE_8,
-            0,
-        )?;
-        Ok(())
-    }
 }
 
 #[cfg(test)]

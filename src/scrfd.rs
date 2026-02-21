@@ -18,7 +18,6 @@ pub struct SCRFD {
     use_kps: bool,
     opencv_helper: OpenCVHelper,
     session: Session,
-    _output_names: Vec<String>,
     input_names: Vec<String>,
     relative_output: bool,
 }
@@ -48,12 +47,7 @@ impl SCRFD {
         let mean = 127.5;
         let std = 128.0;
 
-        // Get model input and output names
-        let output_names = session
-            .outputs()
-            .iter()
-            .map(|o| o.name().to_string())
-            .collect();
+        // Get model input names
         let input_names = session
             .inputs()
             .iter()
@@ -70,7 +64,6 @@ impl SCRFD {
             use_kps,
             opencv_helper: OpenCVHelper::new(mean, std),
             session,
-            _output_names: output_names,
             input_names,
             relative_output,
         })
@@ -109,12 +102,13 @@ impl SCRFD {
 
         let fmc = self._fmc;
         for (idx, &stride) in self.feat_stride_fpn.iter().enumerate() {
-            let scores = outputs[idx].clone();
+            let scores = &outputs[idx];
             let bbox_preds = outputs[idx + fmc].to_shape((outputs[idx + fmc].len() / 4, 4))?;
-            let bbox_preds = bbox_preds * stride as f32;
-            let kps_preds = outputs[idx + fmc * 2]
+            let bbox_preds = (bbox_preds * stride as f32).into_owned();
+            let kps_preds = (outputs[idx + fmc * 2]
                 .to_shape((outputs[idx + fmc * 2].len() / 10, 10))?
-                * stride as f32;
+                * stride as f32)
+                .into_owned();
 
             // Determine feature map dimensions
             let height = input_height / stride as usize;
@@ -122,20 +116,14 @@ impl SCRFD {
 
             // Generate anchor centers
             let key = (height as i32, width as i32, stride);
-            let anchor_centers = if let Some(centers) = center_cache.get(&key) {
-                centers.clone()
-            } else {
-                let centers = ScrfdHelpers::generate_anchor_centers(
+            let anchor_centers = center_cache.entry(key).or_insert_with(|| {
+                ScrfdHelpers::generate_anchor_centers(
                     self.num_anchors,
                     height,
                     width,
                     stride as f32,
-                );
-                if center_cache.len() < 100 {
-                    center_cache.insert(key, centers.clone());
-                }
-                centers
-            };
+                )
+            });
 
             // Filter scores by threshold
             let pos_inds: Vec<usize> = scores
@@ -150,14 +138,14 @@ impl SCRFD {
             }
 
             let pos_scores = scores.select(Axis(0), &pos_inds);
-            let bboxes = ScrfdHelpers::distance2bbox(&anchor_centers, &bbox_preds.to_owned(), None);
+            let bboxes = ScrfdHelpers::distance2bbox(anchor_centers, &bbox_preds, None);
             let pos_bboxes = bboxes.select(Axis(0), &pos_inds);
 
             scores_list.push(pos_scores.to_shape((pos_scores.len(), 1))?.to_owned());
             bboxes_list.push(pos_bboxes);
 
             if self.use_kps {
-                let kpss = ScrfdHelpers::distance2kps(&anchor_centers, &kps_preds.to_owned(), None);
+                let kpss = ScrfdHelpers::distance2kps(anchor_centers, &kps_preds, None);
                 let kpss = kpss.to_shape((kpss.shape()[0], kpss.shape()[1] / 2, 2))?;
                 let pos_kpss = kpss.select(Axis(0), &pos_inds);
                 kpss_list.push(pos_kpss);
@@ -225,7 +213,11 @@ impl SCRFD {
 
         let scores_ravel = scores.iter().collect::<Vec<_>>();
         let mut order = (0..scores_ravel.len()).collect::<Vec<usize>>();
-        order.sort_unstable_by(|&i, &j| scores_ravel[j].partial_cmp(&scores_ravel[i]).unwrap());
+        order.sort_unstable_by(|&i, &j| {
+            scores_ravel[j]
+                .partial_cmp(&scores_ravel[i])
+                .unwrap_or(std::cmp::Ordering::Equal)
+        });
 
         // Prepare pre_detections
         let mut pre_det = ndarray::concatenate(Axis(1), &[bboxes.view(), scores.view()])?;
@@ -245,8 +237,8 @@ impl SCRFD {
             let area = (&det.slice(s![.., 2]) - &det.slice(s![.., 0]))
                 * (&det.slice(s![.., 3]) - &det.slice(s![.., 1]));
             let image_center = (
-                self.input_size.0 as f32 / 2.0,
-                self.input_size.1 as f32 / 2.0,
+                orig_width / 2.0,
+                orig_height / 2.0,
             );
             let offsets = ndarray::stack![
                 Axis(0),
@@ -260,7 +252,11 @@ impl SCRFD {
                 &area - &(offset_dist_squared * 2.0)
             };
             let mut bindex = (0..values.len()).collect::<Vec<usize>>();
-            bindex.sort_unstable_by(|&i, &j| values[j].partial_cmp(&values[i]).unwrap());
+            bindex.sort_unstable_by(|&i, &j| {
+                values[j]
+                    .partial_cmp(&values[i])
+                    .unwrap_or(std::cmp::Ordering::Equal)
+            });
             bindex.truncate(max_num);
             let det = det.select(Axis(0), &bindex);
             if self.use_kps {

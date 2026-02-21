@@ -89,14 +89,8 @@ impl ScrfdHelpers {
             (x1, y1, x2, y2)
         };
 
-        log::trace!("x1: {:?}", x1);
-        log::trace!("y1: {:?}", y1);
-        log::trace!("x2: {:?}", x2);
-        log::trace!("y2: {:?}", y2);
-
         let concatenated =
             ndarray::stack(Axis(1), &[x1.view(), y1.view(), x2.view(), y2.view()]).unwrap();
-        log::trace!("Shape: {:?}", concatenated.shape());
         concatenated
     }
 
@@ -352,10 +346,7 @@ impl ScrfdHelpers {
     /// ```
     pub fn concatenate_array2(arrays: &[Array2<f32>]) -> Result<Array2<f32>, Box<dyn Error>> {
         if arrays.is_empty() {
-            if arrays.len() == 0 {
-                return Ok(Array2::<f32>::zeros((0, 0)));
-            }
-            return Ok(Array2::<f32>::zeros((0, arrays[0].shape()[1])));
+            return Ok(Array2::<f32>::zeros((0, 0)));
         }
         Ok(ndarray::concatenate(
             Axis(0),
@@ -391,14 +382,7 @@ impl ScrfdHelpers {
     /// ```
     pub fn concatenate_array3(arrays: &[Array3<f32>]) -> Result<Array3<f32>, Box<dyn Error>> {
         if arrays.is_empty() {
-            if arrays.len() == 0 {
-                return Ok(Array3::<f32>::zeros((0, 0, 0)));
-            }
-            return Ok(Array3::<f32>::zeros((
-                0,
-                arrays[0].shape()[1],
-                arrays[0].shape()[2],
-            )));
+            return Ok(Array3::<f32>::zeros((0, 0, 0)));
         }
         Ok(ndarray::concatenate(
             Axis(0),
