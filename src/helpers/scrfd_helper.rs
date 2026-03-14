@@ -464,9 +464,8 @@ mod tests {
             [16.0, 16.0]
         ];
 
-        println!("Anchor centers: {:?}", anchor_centers);
-        println!("Expected: {:?}", expected);
-
+        log::trace!("Anchor centers: {:?}", anchor_centers);
+        log::trace!("Expected: {:?}", expected);
         assert_eq!(anchor_centers, expected);
     }
 }

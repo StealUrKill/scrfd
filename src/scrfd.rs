@@ -12,7 +12,7 @@ pub struct SCRFD {
     input_size: (i32, i32),
     conf_thres: f32,
     iou_thres: f32,
-    _fmc: usize,
+    fmc: usize,
     feat_stride_fpn: Vec<i32>,
     num_anchors: usize,
     use_kps: bool,
@@ -58,7 +58,7 @@ impl SCRFD {
             input_size,
             conf_thres,
             iou_thres,
-            _fmc: fmc,
+            fmc: fmc,
             feat_stride_fpn,
             num_anchors,
             use_kps,
@@ -94,13 +94,13 @@ impl SCRFD {
         };
 
         let mut outputs = vec![];
-        for (_, output) in session_output.iter().enumerate() {
+        for (_, output) in session_output.iter() {
             let f32_array: ArrayViewD<f32> = output.1.try_extract_array()?;
             outputs.push(f32_array.to_owned());
         }
         drop(session_output);
 
-        let fmc = self._fmc;
+        let fmc = self.fmc;
         for (idx, &stride) in self.feat_stride_fpn.iter().enumerate() {
             let scores = &outputs[idx];
             let bbox_preds = outputs[idx + fmc].to_shape((outputs[idx + fmc].len() / 4, 4))?;
@@ -242,8 +242,8 @@ impl SCRFD {
             );
             let offsets = ndarray::stack![
                 Axis(0),
-                (&det.slice(s![.., 0]) + &det.slice(s![.., 2])) / 2.0 - image_center.1 as f32,
-                (&det.slice(s![.., 1]) + &det.slice(s![.., 3])) / 2.0 - image_center.0 as f32,
+                (&det.slice(s![.., 0]) + &det.slice(s![.., 2])) / 2.0 - image_center.0 as f32,
+                (&det.slice(s![.., 1]) + &det.slice(s![.., 3])) / 2.0 - image_center.1 as f32,
             ];
             let offset_dist_squared = offsets.mapv(|x| x * x).sum_axis(Axis(0));
             let values = if metric == "max" {
