@@ -32,7 +32,8 @@ mod tests {
         // Initialize SCRFD
         let model_path = Path::new("models/det_10g.onnx");
         let session = Session::builder()?
-            .with_execution_providers([CPUExecutionProvider::default().build()])?
+            .with_execution_providers([CPUExecutionProvider::default().build()])
+            .map_err(|e| e.to_string())?
             .commit_from_file(model_path)?;
 
         let mut scrfd = builder::SCRFDBuilder::new(session)
@@ -114,7 +115,8 @@ mod tests {
         // Initialize SCRFD
         let model_path = Path::new("models/det_10g.onnx");
         let session = Session::builder()?
-            .with_execution_providers([CPUExecutionProvider::default().build()])?
+            .with_execution_providers([CPUExecutionProvider::default().build()])
+            .map_err(|e| e.to_string())?
             .commit_from_file(model_path)?;
 
         let mut scrfd = SCRFDAsync::new(session, (640, 640), 0.25, 0.4, true)?;

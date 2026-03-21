@@ -95,7 +95,7 @@ impl SCRFD {
 
         let mut outputs = vec![];
         for (_, output) in session_output.iter() {
-            let f32_array: ArrayViewD<f32> = output.1.try_extract_array()?;
+            let f32_array: ArrayViewD<f32> = output.try_extract_array()?;
             outputs.push(f32_array.to_owned());
         }
         drop(session_output);
