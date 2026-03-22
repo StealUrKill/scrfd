@@ -46,13 +46,13 @@ impl ScrfdHelpers {
     ///
     /// * `points` - Center points with shape (n, 2), where each row is [x, y].
     /// * `distance` - Distances from points to boundaries with shape (n, 4),
-    ///               where each row is [left, top, right, bottom].
+    ///   where each row is [left, top, right, bottom].
     /// * `max_shape` - Optional tuple of (height, width) to clamp coordinates.
     ///
     /// # Returns
     ///
     /// * `Array2<f32>` - Decoded bounding boxes with shape (n, 4),
-    ///                  where each row is [x1, y1, x2, y2].
+    ///   where each row is [x1, y1, x2, y2].
     ///
     /// # Examples
     ///
@@ -104,13 +104,13 @@ impl ScrfdHelpers {
     ///
     /// * `points` - Center points with shape (n, 2), where each row is [x, y].
     /// * `distance` - Distances from points to keypoints with shape (n, 2k),
-    ///               where k is the number of keypoints.
+    ///   where k is the number of keypoints.
     /// * `max_shape` - Optional tuple of (height, width) to clamp coordinates.
     ///
     /// # Returns
     ///
     /// * `Array2<f32>` - Decoded keypoints with shape (n, 2k),
-    ///                  where k is the number of keypoints.
+    ///   where k is the number of keypoints.
     ///
     /// # Examples
     ///
@@ -267,7 +267,7 @@ impl ScrfdHelpers {
     /// # Returns
     ///
     /// * `Array2<f32>` - Anchor centers with shape (height * width * num_anchors, 2),
-    ///                  where each row is [x, y].
+    ///   where each row is [x, y].
     ///
     /// # Examples
     ///

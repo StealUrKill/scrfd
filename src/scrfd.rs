@@ -8,6 +8,12 @@ use opencv::prelude::MatTraitConst;
 use ort::{session::Session, value::Value};
 use std::{collections::HashMap, error::Error};
 
+/// Per-stride outputs from the SCRFD forward pass: (scores, bboxes, keypoints).
+pub type ForwardOutput = (Vec<Array2<f32>>, Vec<Array2<f32>>, Vec<Array3<f32>>);
+
+/// Detection result: (detections, optional keypoints).
+pub type DetectOutput = (Array2<f32>, Option<Array3<f32>>);
+
 pub struct SCRFD {
     input_size: (i32, i32),
     conf_thres: f32,
@@ -58,7 +64,7 @@ impl SCRFD {
             input_size,
             conf_thres,
             iou_thres,
-            fmc: fmc,
+            fmc,
             feat_stride_fpn,
             num_anchors,
             use_kps,
@@ -78,7 +84,7 @@ impl SCRFD {
         &mut self,
         input_tensor: ArrayD<f32>,
         center_cache: &mut HashMap<(i32, i32, i32), Array2<f32>>,
-    ) -> Result<(Vec<Array2<f32>>, Vec<Array2<f32>>, Vec<Array3<f32>>), Box<dyn Error>> {
+    ) -> Result<ForwardOutput, Box<dyn Error>> {
         let mut scores_list = Vec::new();
         let mut bboxes_list = Vec::new();
         let mut kpss_list = Vec::new();
@@ -168,7 +174,7 @@ impl SCRFD {
         max_num: usize,
         metric: &str,
         center_cache: &mut HashMap<(i32, i32, i32), Array2<f32>>,
-    ) -> Result<(Array2<f32>, Option<Array3<f32>>), Box<dyn Error>> {
+    ) -> Result<DetectOutput, Box<dyn Error>> {
         let orig_width = image.cols() as f32;
         let orig_height = image.rows() as f32;
 
@@ -215,7 +221,7 @@ impl SCRFD {
         let mut order = (0..scores_ravel.len()).collect::<Vec<usize>>();
         order.sort_unstable_by(|&i, &j| {
             scores_ravel[j]
-                .partial_cmp(&scores_ravel[i])
+                .partial_cmp(scores_ravel[i])
                 .unwrap_or(std::cmp::Ordering::Equal)
         });
 
@@ -242,8 +248,8 @@ impl SCRFD {
             );
             let offsets = ndarray::stack![
                 Axis(0),
-                (&det.slice(s![.., 0]) + &det.slice(s![.., 2])) / 2.0 - image_center.0 as f32,
-                (&det.slice(s![.., 1]) + &det.slice(s![.., 3])) / 2.0 - image_center.1 as f32,
+                (&det.slice(s![.., 0]) + &det.slice(s![.., 2])) / 2.0 - image_center.0,
+                (&det.slice(s![.., 1]) + &det.slice(s![.., 3])) / 2.0 - image_center.1,
             ];
             let offset_dist_squared = offsets.mapv(|x| x * x).sum_axis(Axis(0));
             let values = if metric == "max" {

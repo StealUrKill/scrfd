@@ -111,7 +111,7 @@ impl OpenCVHelper {
         let blob = dnn::blob_from_image(
             &image,
             1.0 / self.std as f64,
-            core::Size::new(input_size.0 as i32, input_size.1 as i32),
+            core::Size::new(input_size.0, input_size.1),
             core::Scalar::new(self.mean as f64, self.mean as f64, self.mean as f64, 0.0),
             true,
             false,

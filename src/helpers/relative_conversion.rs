@@ -39,7 +39,7 @@ impl RelativeConversion {
     /// # Arguments
     ///
     /// * `bboxes` - A reference to a 2D array containing bounding boxes in `[x1, y1, x2, y2]` format.
-    ///              Each row represents one bounding box.
+    ///   Each row represents one bounding box.
     /// * `img_width` - The width of the image in pixels.
     /// * `img_height` - The height of the image in pixels.
     ///
@@ -109,7 +109,7 @@ impl RelativeConversion {
     /// # Arguments
     ///
     /// * `keypoints` - A reference to a 3D array containing keypoints in `[x, y]` format.
-    ///                 Shape: `(num_detections, num_keypoints, 2)`
+    ///   Shape: `(num_detections, num_keypoints, 2)`
     /// * `img_width` - The width of the image in pixels.
     /// * `img_height` - The height of the image in pixels.
     ///
