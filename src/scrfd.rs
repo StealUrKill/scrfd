@@ -88,6 +88,18 @@ impl SCRFD {
         let mut scores_list = Vec::new();
         let mut bboxes_list = Vec::new();
         let mut kpss_list = Vec::new();
+
+        // Guard model-shape assumptions up front so an incompatible model fails
+        // with a clear error instead of an index-out-of-bounds panic.
+        if self.input_names.is_empty() {
+            return Err("incompatible model: SCRFD session has no inputs".into());
+        }
+        if input_tensor.ndim() < 4 {
+            return Err(
+                format!("SCRFD input tensor must be 4-D NCHW, got {}-D", input_tensor.ndim()).into(),
+            );
+        }
+
         let input_height = input_tensor.shape()[2];
         let input_width = input_tensor.shape()[3];
         let input_value = Value::from_array(input_tensor)?;
@@ -105,6 +117,18 @@ impl SCRFD {
             outputs.push(f32_array.to_owned());
         }
         drop(session_output);
+
+        // The loop below unconditionally indexes outputs[idx + fmc*2], so an
+        // incompatible model with too few output tensors would panic. Fail cleanly.
+        let required = self.fmc * 3;
+        if outputs.len() < required {
+            return Err(format!(
+                "incompatible SCRFD model: produced {} output tensors, expected at least {}",
+                outputs.len(),
+                required
+            )
+            .into());
+        }
 
         let fmc = self.fmc;
         for (idx, &stride) in self.feat_stride_fpn.iter().enumerate() {

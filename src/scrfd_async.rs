@@ -159,6 +159,17 @@ impl SCRFDAsync {
         let mut scores_list = Vec::new();
         let mut bboxes_list = Vec::new();
         let mut kpss_list = Vec::new();
+
+        // Guard model-shape assumptions up front (mirrors the sync SCRFD::forward).
+        if self.input_names.is_empty() {
+            return Err("incompatible model: SCRFD session has no inputs".into());
+        }
+        if input_tensor.ndim() < 4 {
+            return Err(
+                format!("SCRFD input tensor must be 4-D NCHW, got {}-D", input_tensor.ndim()).into(),
+            );
+        }
+
         let input_height = input_tensor.shape()[2];
         let input_width = input_tensor.shape()[3];
         let input_value = Value::from_array(input_tensor.clone())?;
@@ -183,7 +194,7 @@ impl SCRFDAsync {
 
         let mut outputs = vec![];
         for (_, output) in session_output.iter() {
-            let f32_array: ArrayViewD<f32> = match output.1.try_extract_array() {
+            let f32_array: ArrayViewD<f32> = match output.try_extract_array() {
                 Ok(array) => array,
                 Err(e) => return Err(Box::new(e)),
             };
@@ -191,6 +202,17 @@ impl SCRFDAsync {
         }
 
         drop(session_output);
+
+        // The loop below unconditionally indexes outputs[idx + fmc*2] (see sync path).
+        let required = self.fmc * 3;
+        if outputs.len() < required {
+            return Err(format!(
+                "incompatible SCRFD model: produced {} output tensors, expected at least {}",
+                outputs.len(),
+                required
+            )
+            .into());
+        }
 
         let fmc = self.fmc;
         for (idx, &stride) in self.feat_stride_fpn.iter().enumerate() {
